@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Interaktif Pecahan - Kelas 6 SD</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F0F7FF;
+        }
+        .font-fun {
+            font-family: 'Fredoka', cursive;
+        }
+        /* Style pecahan tegak lurus */
+        .frac {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+            text-align: center;
+            padding: 0 4px;
+            font-weight: 700;
+        }
+        .frac .num {
+            border-bottom: 2px solid currentColor;
+            padding-bottom: 1px;
+            line-height: 1.1;
+        }
+        .frac .den {
+            padding-top: 1px;
+            line-height: 1.1;
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+        .btn-nav-active {
+            background-color: #2563EB !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- Header Navigation -->
+    <header class="bg-white border-b border-blue-100 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-br from-blue-600 to-indigo-600 text-white p-2.5 rounded-2xl flex items-center justify-center shadow-md shadow-blue-200">
+                    <i class="fa-solid fa-award text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-fun text-xl md:text-2xl text-blue-900 leading-none">Quiz Pecahan Interaktif</h1>
+                    <span class="text-xs font-semibold text-blue-500 tracking-wider uppercase">Matematika Kelas 6 SD • 30 Soal</span>
+                </div>
+            </div>
+
+            <!-- Header Status & Storage Alert -->
+            <div class="flex items-center space-x-3">
+                <div class="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-xl border border-emerald-200 text-xs font-semibold flex items-center gap-1.5">
+                    <i class="fa-solid fa-cloud-arrow-up text-emerald-500"></i>
+                    <span class="hidden sm:inline">Progress</span> Tersimpan Otomatis
+                </div>
+                <button onclick="resetQuizWithConfirm()" class="bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-xl transition-all border border-slate-200 flex items-center gap-1">
+                    <i class="fa-solid fa-rotate-right"></i> <span class="hidden sm:inline">Reset Quiz</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
+
+        <!-- Progress Overview Bar -->
+        <div class="bg-white rounded-3xl p-5 card-shadow border border-blue-50 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="w-full md:w-2/3 space-y-2">
+                <div class="flex justify-between text-xs font-bold text-slate-600">
+                    <span>Kemajuan Quiz: <span id="answered-count-text" class="text-blue-600">0</span> dari 30 Soal</span>
+                    <span id="progress-percent-text" class="text-blue-600">0%</span>
+                </div>
+                <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden border border-slate-200">
+                    <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-indigo-600 h-full w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4 border-t md:border-t-0 md:border-l border-slate-100 pt-3 md:pt-0 md:pl-6 w-full md:w-auto justify-around">
+                <div class="text-center">
+                    <span class="text-xs text-slate-400 font-semibold uppercase block">Skor Saat Ini</span>
+                    <span id="live-score" class="text-2xl font-fun text-blue-600">0</span>
+                </div>
+                <div class="text-center">
+                    <span class="text-xs text-slate-400 font-semibold uppercase block">Benar</span>
+                    <span id="live-correct" class="text-xl font-bold text-emerald-600">0</span>
+                </div>
+                <div class="text-center">
+                    <span class="text-xs text-slate-400 font-semibold uppercase block">Salah</span>
+                    <span id="live-wrong" class="text-xl font-bold text-red-500">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- LEFT: Navigasi Nomor Soal & Filter (4 cols) -->
+            <div class="lg:col-span-4 space-y-4">
+                <div class="bg-white rounded-3xl p-5 card-shadow border border-blue-50 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <h3 class="font-fun text-lg text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-list-ol text-blue-500"></i> Navigasi Soal
+                        </h3>
+                        <span class="text-xs font-semibold bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg">1 - 30</span>
+                    </div>
+
+                    <!-- Filter Kategori -->
+                    <div class="flex flex-wrap gap-1.5">
+                        <button onclick="setFilter('all')" id="filter-all" class="filter-btn text-xs font-semibold px-2.5 py-1 rounded-lg bg-blue-600 text-white transition-all">Semua (30)</button>
+                        <button onclick="setFilter('top1')" id="filter-top1" class="filter-btn text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Sama (10)</button>
+                        <button onclick="setFilter('top2')" id="filter-top2" class="filter-btn text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">KPK (10)</button>
+                        <button onclick="setFilter('top3')" id="filter-top3" class="filter-btn text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Campuran (10)</button>
+                    </div>
+
+                    <!-- Grid Tombol Soal 1-30 -->
+                    <div id="question-grid" class="grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-5 gap-2 pt-1">
+                        <!-- Rendered via JS -->
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-100 text-xs font-medium text-slate-500 space-y-1">
+                        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-slate-200 inline-block"></span> Belum dijawab</div>
+                        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Jawaban Benar</div>
+                        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> Jawaban Salah</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Area Kartu Soal & Pilihan Jawaban (8 cols) -->
+            <div class="lg:col-span-8 space-y-4">
+                
+                <!-- Main Question Card -->
+                <div class="bg-white rounded-3xl p-6 md:p-8 card-shadow border border-blue-50 relative space-y-6">
+                    
+                    <!-- Question Top Badge -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                        <div class="flex items-center space-x-2">
+                            <span id="q-number-badge" class="bg-blue-600 text-white font-fun text-sm px-3.5 py-1 rounded-xl">Soal #1</span>
+                            <span id="q-topic-badge" class="bg-blue-100 text-blue-700 font-bold text-xs px-3 py-1 rounded-xl">Penyebut Sama</span>
+                        </div>
+                        <span id="q-status-badge" class="text-xs font-bold px-3 py-1 rounded-xl bg-slate-100 text-slate-500">Belum Dijawab</span>
+                    </div>
+
+                    <!-- Question Text -->
+                    <div class="space-y-2">
+                        <h2 id="question-text" class="text-lg md:text-xl font-bold text-slate-800 leading-relaxed">
+                            <!-- Question rendered via JS -->
+                        </h2>
+                    </div>
+
+                    <!-- Answer Options (A, B, C, D) -->
+                    <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                        <!-- Options rendered via JS -->
+                    </div>
+
+                    <!-- Instant Feedback & Pembahasan Box -->
+                    <div id="feedback-box" class="hidden rounded-2xl p-4 md:p-5 border transition-all space-y-2">
+                        <div id="feedback-title" class="font-bold text-sm md:text-base flex items-center gap-2"></div>
+                        <div id="feedback-explanation" class="text-xs md:text-sm text-slate-700 leading-relaxed"></div>
+                    </div>
+
+                    <!-- Bottom Nav Buttons -->
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                        <button onclick="prevQuestion()" id="btn-prev" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-5 py-2.5 rounded-2xl text-xs md:text-sm transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-arrow-left"></i> <span>Sebelumnya</span>
+                        </button>
+                        
+                        <div class="text-xs text-slate-400 font-semibold hidden sm:block">
+                            Gunakan tombol navigasi atau klik nomor soal
+                        </div>
+
+                        <button onclick="nextQuestion()" id="btn-next" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-2xl text-xs md:text-sm shadow-md transition-all flex items-center gap-2">
+                            <span>Selanjutnya</span> <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Final Score Dashboard Card (Appears when completed/reviewed) -->
+                <div id="dashboard-card" class="bg-gradient-to-br from-slate-900 to-blue-950 text-white rounded-3xl p-6 md:p-8 card-shadow space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div class="space-y-2 text-center md:text-left">
+                            <span class="bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-bold px-3 py-1 rounded-full uppercase">Hasil Akhir Quiz</span>
+                            <h3 class="font-fun text-2xl md:text-3xl text-yellow-400">Ringkasan Perolehan Nilai</h3>
+                            <p class="text-xs md:text-sm text-slate-300 max-w-md">
+                                Kamu dapat meninjau kembali setiap nomor soal di atas untuk melihat letak kesalahan dan pembahasan lengkapnya!
+                            </p>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 text-center min-w-[160px]">
+                            <span class="text-xs text-slate-300 font-semibold uppercase block">Nilai Akhir</span>
+                            <span id="final-score-val" class="text-4xl md:text-5xl font-fun text-yellow-400">0</span>
+                            <span class="text-xs text-slate-300 block mt-1">Skor Maksimal: 100</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3 bg-white/5 p-4 rounded-2xl border border-white/10 text-center">
+                        <div>
+                            <span class="text-xs text-slate-400 block">Total Soal</span>
+                            <span class="text-lg font-bold text-white">30</span>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-400 block">Jawaban Benar</span>
+                            <span id="final-correct-val" class="text-lg font-bold text-emerald-400">0</span>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-400 block">Jawaban Salah</span>
+                            <span id="final-wrong-val" class="text-lg font-bold text-red-400">0</span>
+                        </div>
+                    </div>
+
+                    <div id="motivation-box" class="bg-blue-600/30 border border-blue-400/30 rounded-2xl p-4 text-xs md:text-sm text-center font-semibold text-blue-100">
+                        <!-- Dynamic message based on score -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-10 py-4 text-center text-xs text-slate-500 font-medium">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <span>© 2026 Modul & Quiz Matematika SD Kelas 6</span>
+            <span class="text-blue-600 font-bold"><i class="fa-solid fa-graduation-cap"></i> Terus Berlatih Hingga Juara!</span>
+        </div>
+    </footer>
+
+    <!-- JavaScript Quiz Engine -->
+    <script>
+        // Helper untuk menghasilkan HTML pecahan tegak lurus
+        function f(num, den) {
+            return `<span class="frac"><span class="num">${num}</span><span class="den">${den}</span></span>`;
+        }
+        function mf(whole, num, den) {
+            return `${whole} ${f(num, den)}`;
+        }
+
+        // Database 30 Soal Quiz
+        // Kunci Jawaban diacak seimbang: Option A(7), B(8), C(8), D(7)
+        const quizData = [
+            // --- TOPIC 1: PENYEBUT SAMA (10 Soal) ---
+            {
+                id: 1,
+                topic: "Penyebut Sama",
+                cat: "top1",
+                question: `Berapakah hasil dari ${f(2, 9)} + ${f(4, 9)}?`,
+                options: [f(6, 18), f(2, 3), f(5, 9), f(7, 9)],
+                correct: 1, // B
+                explanation: `Penyebut kedua pecahan sudah sama (9). Jumlahkan pembilangnya: 2 + 4 = 6. Diperoleh ${f(6, 9)}. Sederhanakan dengan membagi pembilang dan penyebut dengan 3, sehingga menjadi ${f(2, 3)}.`
+            },
+            {
+                id: 2,
+                topic: "Penyebut Sama",
+                cat: "top1",
+                question: `Hitunglah pengurangan pecahan berikut: ${f(7, 12)} - ${f(3, 12)} = ...`,
+                options: [f(4, 24), f(5, 12), f(1, 3), f(1, 2)],
+                correct: 2, // C
+                explanation: `Penyebut sudah sama (12). Kurangkan pembilangnya: 7 - 3 = 4. Diperoleh ${f(4, 12)}. Sederhanakan dengan membagi pembilang dan penyebut dengan 4, sehingga menjadi ${f(1, 3)}.`
+            },
+            {
+                id: 3,
+                topic: "Penyebut Sama",
+                cat: "top1",
+                question: `Hasil dari ${f(5, 15)} + ${f(4, 15)} adalah ...`,
+                options: [f(3, 5), f(9, 30), f(2, 5), f(1, 3)],
+                correct: 0, // A
+                explanation: `Penyebut sudah sama (15). Jumlahkan pembilangnya: 5 + 4 = 9. Diperoleh ${f(9, 15)}. Sederhanakan dengan membagi pembilang dan penyebut dengan 3, menjadi ${f(3, 5)}.`
+            },
+            {
+                id: 4,
+                topic: "Penyebut Sama",
+                cat: "top1",
+                question: `Berapakah hasil dari ${f(11, 16)} - ${f(5, 16)}?`,
+                options: [f(6, 32), f(1, 4), f(5, 16), f(3, 8)],
+                correct: 3, // D
+                explanation: `Penyebut sudah sama (16). Kurangkan pembilangnya: 11 - 5 = 6. Hasilnya ${f(6, 16)}. Disederhanakan (dibagi 2) menjadi ${f(3, 8)}.`
+            },
+            {
+                id: 5,
+                topic: "Penyebut Sama",
+                cat: "top1",
+                question: `Hitunglah operasi penjumlahan pecahan berikut: ${f(3, 10)} + ${f(4, 10)} = ...`,
+                options: [f(7, 20), f(7, 10), f(1, 2), f(8, 10)],
+                correct: 1, // B
+                explanation: `Penyebut sudah sama (10). Cukup jumlahkan pembilangnya: 3 + 4 = 7. Maka hasil akhirnya adalah ${f(7, 10)}.`
+            },
+            {
+                id: 6,
+                topic: "Penyebut Sama",
+                cat: "top1",
+                question: `Ibu memotong kue semangka menjadi 12 potong sama besar. Paman memakan ${f(4, 12)} bagian dan Bibi memakan ${f(5, 12)} bagian. Berapa total kue yang dimakan Paman dan Bibi?`,
+                options: [f(9, 24), f(2, 3), f(3, 4), f(5, 6)],
+                correct: 2, // C
+                explanation: `Total kue = ${f(4, 12)} + ${f(5, 12)} = ${f(9, 12)}. Sederhanakan pecahan ${f(9, 12)} dengan membagi pembilang dan penyebut dengan 3, hasilnya ${f(3, 4)}.`
+            },
+            {
+                id: 7,
+                topic: "Penyebut Sama",
+                cat: "top1",
+                question: `Santi memiliki pita sepanjang ${f(9, 10)} meter. Dipotong untuk membungkus kado sepanjang ${f(4, 10)} meter. Berapa meter sisa pita Santi?`,
+                options: [f(1, 2), f(5, 20), f(3, 10), f(2, 5)],
+                correct: 0, // A
+                explanation: `Sisa pita = ${f(9, 10)} - ${f(4, 10)} = ${f(5, 10)} meter. Sederhanakan ${f(5, 10)} dengan membagi 5 menjadi ${f(1, 2)} meter.`
+            },
+            {
+                id: 8,
+                topic: "Penyebut Sama",
+                cat: "top1",
+                question: `Berapakah hasil penjumlahan dari ${f(5, 18)} + ${f(7, 18)}?`,
+                options: [f(12, 36), f(5, 9), f(1, 2), f(2, 3)],
+                correct: 3, // D
+                explanation: `Penyebut sudah sama (18). Jumlahkan pembilang: 5 + 7 = 12. Diperoleh ${f(12, 18)}. Sederhanakan dengan membagi pembilang dan penyebut dengan 6, hasilnya ${f(2, 3)}.`
+            },
+            {
+                id: 9,
+                topic: "Penyebut Sama",
+                cat: "top1",
+                question: `Hitunglah hasil dari ${f(13, 20)} - ${f(8, 20)} = ...`,
+                options: [f(5, 40), f(1, 4), f(3, 20), f(1, 2)],
+                correct: 1, // B
+                explanation: `Penyebut sudah sama (20). Kurangkan pembilangnya: 13 - 8 = 5. Hasilnya ${f(5, 20)}. Disederhanakan dengan membagi 5 menjadi ${f(1, 4)}.`
+            },
+            {
+                id: 10,
+                topic: "Penyebut Sama",
+                cat: "top1",
+                question: `Pak Tani memanen padi. Sebanyak ${f(3, 8)} bagian dijual ke pasar dan ${f(2, 8)} bagian disimpan di lumbung. Berapa total bagian padi yang telah dijual dan disimpan?`,
+                options: [f(5, 16), f(1, 2), f(5, 8), f(3, 4)],
+                correct: 2, // C
+                explanation: `Total bagian padi = ${f(3, 8)} + ${f(2, 8)} = ${f(5, 8)} bagian.`
+            },
+
+            // --- TOPIC 2: PENYEBUT BERBEDA (METODE KPK) (10 Soal) ---
+            {
+                id: 11,
+                topic: "Penyebut Berbeda (KPK)",
+                cat: "top2",
+                question: `Berapakah hasil dari ${f(1, 3)} + ${f(1, 4)}?`,
+                options: [f(7, 12), f(2, 7), f(5, 12), f(1, 12)],
+                correct: 0, // A
+                explanation: `KPK dari penyebut 3 dan 4 adalah 12.<br>Ubah pecahan: ${f(1, 3)} = ${f(4, 12)} dan ${f(1, 4)} = ${f(3, 12)}.<br>Jumlahkan: ${f(4, 12)} + ${f(3, 12)} = ${f(7, 12)}.`
+            },
+            {
+                id: 12,
+                topic: "Penyebut Berbeda (KPK)",
+                cat: "top2",
+                question: `Hitunglah hasil dari ${f(5, 6)} - ${f(1, 2)} = ...`,
+                options: [f(4, 4), f(2, 4), f(1, 6), f(1, 3)],
+                correct: 3, // D
+                explanation: `KPK dari 6 dan 2 adalah 6.<br>Ubah pecahan: ${f(1, 2)} = ${f(3, 6)}.<br>Kurangkan: ${f(5, 6)} - ${f(3, 6)} = ${f(2, 6)}. Disederhanakan (dibagi 2) menjadi ${f(1, 3)}.`
+            },
+            {
+                id: 13,
+                topic: "Penyebut Berbeda (KPK)",
+                cat: "top2",
+                question: `Hasil dari penjumlahan ${f(2, 5)} + ${f(1, 3)} adalah ...`,
+                options: [f(3, 8), f(11, 15), f(7, 15), f(3, 15)],
+                correct: 1, // B
+                explanation: `KPK dari 5 dan 3 adalah 15.<br>Ubah pecahan: ${f(2, 5)} = ${f(6, 15)} dan ${f(1, 3)} = ${f(5, 15)}.<br>Jumlahkan: ${f(6, 15)} + ${f(5, 15)} = ${f(11, 15)}.`
+            },
+            {
+                id: 14,
+                topic: "Penyebut Berbeda (KPK)",
+                cat: "top2",
+                question: `Berapakah hasil dari ${f(3, 4)} - ${f(2, 5)}?`,
+                options: [f(1, 1), f(1, 20), f(7, 20), f(9, 20)],
+                correct: 2, // C
+                explanation: `KPK dari 4 dan 5 adalah 20.<br>Ubah pecahan: ${f(3, 4)} = ${f(15, 20)} dan ${f(2, 5)} = ${f(8, 20)}.<br>Kurangkan: ${f(15, 20)} - ${f(8, 20)} = ${f(7, 20)}.`
+            },
+            {
+                id: 15,
+                topic: "Penyebut Berbeda (KPK)",
+                cat: "top2",
+                question: `Hitunglah penjumlahan pecahan berikut: ${f(1, 6)} + ${f(3, 8)} = ...`,
+                options: [f(13, 24), f(4, 14), f(11, 24), f(5, 12)],
+                correct: 0, // A
+                explanation: `KPK dari 6 dan 8 adalah 24.<br>Ubah pecahan: ${f(1, 6)} = ${f(4, 24)} dan ${f(3, 8)} = ${f(9, 24)}.<br>Jumlahkan: ${f(4, 24)} + ${f(9, 24)} = ${f(13, 24)}.`
+            },
+            {
+                id: 16,
+                topic: "Penyebut Berbeda (KPK)",
+                cat: "top2",
+                question: `Berapakah hasil pengurangan dari ${f(7, 10)} - ${f(1, 4)}?`,
+                options: [f(6, 6), f(3, 10), f(11, 20), f(9, 20)],
+                correct: 3, // D
+                explanation: `KPK dari 10 dan 4 adalah 20.<br>Ubah pecahan: ${f(7, 10)} = ${f(14, 20)} dan ${f(1, 4)} = ${f(5, 20)}.<br>Kurangkan: ${f(14, 20)} - ${f(5, 20)} = ${f(9, 20)}.`
+            },
+            {
+                id: 17,
+                topic: "Penyebut Berbeda (KPK)",
+                cat: "top2",
+                question: `Sinta mengisi ${f(2, 3)} liter air ke dalam botol, lalu ia menambahkan lagi ${f(1, 5)} liter. Berapa liter total air di dalam botol Sinta?`,
+                options: [f(3, 8), f(13, 15), f(11, 15), f(4, 5)],
+                correct: 1, // B
+                explanation: `Total air = ${f(2, 3)} + ${f(1, 5)}.<br>KPK dari 3 dan 5 adalah 15.<br>Ubah pecahan: ${f(2, 3)} = ${f(10, 15)} dan ${f(1, 5)} = ${f(3, 15)}.<br>Jumlahkan: ${f(10, 15)} + ${f(3, 15)} = ${f(13, 15)} liter.`
+            },
+            {
+                id: 18,
+                topic: "Penyebut Berbeda (KPK)",
+                cat: "top2",
+                question: `Denis memiliki tali sepanjang ${f(5, 6)} meter. Dipakai untuk mengikat dus bekas sepanjang ${f(3, 4)} meter. Berapa meter sisa tali Denis?`,
+                options: [f(2, 2), f(1, 6), f(1, 12), f(1, 4)],
+                correct: 2, // C
+                explanation: `Sisa tali = ${f(5, 6)} - ${f(3, 4)}.<br>KPK dari 6 dan 4 adalah 12.<br>Ubah pecahan: ${f(5, 6)} = ${f(10, 12)} dan ${f(3, 4)} = ${f(9, 12)}.<br>Kurangkan: ${f(10, 12)} - ${f(9, 12)} = ${f(1, 12)} meter.`
+            },
+            {
+                id: 19,
+                topic: "Penyebut Berbeda (KPK)",
+                cat: "top2",
+                question: `Hasil dari ${f(3, 5)} + ${f(1, 6)} adalah ...`,
+                options: [f(23, 30), f(4, 11), f(19, 30), f(7, 10)],
+                correct: 0, // A
+                explanation: `KPK dari 5 dan 6 adalah 30.<br>Ubah pecahan: ${f(3, 5)} = ${f(18, 30)} dan ${f(1, 6)} = ${f(5, 30)}.<br>Jumlahkan: ${f(18, 30)} + ${f(5, 30)} = ${f(23, 30)}.`
+            },
+            {
+                id: 20,
+                topic: "Penyebut Berbeda (KPK)",
+                cat: "top2",
+                question: `Hitunglah pengurangan berikut: ${f(7, 8)} - ${f(2, 3)} = ...`,
+                options: [f(5, 5), f(1, 8), f(7, 24), f(5, 24)],
+                correct: 3, // D
+                explanation: `KPK dari 8 dan 3 adalah 24.<br>Ubah pecahan: ${f(7, 8)} = ${f(21, 24)} dan ${f(2, 3)} = ${f(16, 24)}.<br>Kurangkan: ${f(21, 24)} - ${f(16, 24)} = ${f(5, 24)}.`
+            },
+
+            // --- TOPIC 3: PECAHAN CAMPURAN (10 Soal) ---
+            {
+                id: 21,
+                topic: "Pecahan Campuran",
+                cat: "top3",
+                question: `Berapakah hasil dari ${mf(1, 1, 2)} + ${mf(2, 1, 4)}?`,
+                options: [mf(3, 2, 6), mf(3, 3, 4), mf(3, 1, 2), mf(4, 1, 4)],
+                correct: 1, // B
+                explanation: `Pisahkan bilangan bulat dan pecahan:<br>• Bulat: 1 + 2 = 3<br>• Pecahan: ${f(1, 2)} + ${f(1, 4)} = ${f(2, 4)} + ${f(1, 4)} = ${f(3, 4)}<br>Gabungkan: ${mf(3, 3, 4)}.`
+            },
+            {
+                id: 22,
+                topic: "Pecahan Campuran",
+                cat: "top3",
+                question: `Hitunglah pengurangan pecahan campuran: ${mf(3, 2, 3)} - ${mf(1, 1, 6)} = ...`,
+                options: [mf(2, 1, 3), mf(2, 3, 3), mf(2, 1, 2), mf(1, 5, 6)],
+                correct: 2, // C
+                explanation: `• Bulat: 3 - 1 = 2<br>• Pecahan: ${f(2, 3)} - ${f(1, 6)} = ${f(4, 6)} - ${f(1, 6)} = ${f(3, 6)} = ${f(1, 2)}<br>Hasil akhir: ${mf(2, 1, 2)}.`
+            },
+            {
+                id: 23,
+                topic: "Pecahan Campuran",
+                cat: "top3",
+                question: `Hasil dari ${mf(2, 1, 3)} + ${mf(1, 2, 5)} adalah ...`,
+                options: [mf(3, 11, 15), mf(3, 3, 8), mf(3, 7, 15), mf(4, 1, 15)],
+                correct: 0, // A
+                explanation: `• Bulat: 2 + 1 = 3<br>• Pecahan: ${f(1, 3)} + ${f(2, 5)} = ${f(5, 15)} + ${f(6, 15)} = ${f(11, 15)}<br>Hasil akhir: ${mf(3, 11, 15)}.`
+            },
+            {
+                id: 24,
+                topic: "Pecahan Campuran",
+                cat: "top3",
+                question: `Berapakah hasil dari ${mf(4, 1, 2)} - ${mf(2, 3, 4)}?`,
+                options: [mf(2, 1, 4), mf(1, 1, 2), mf(2, 1, 2), mf(1, 3, 4)],
+                correct: 3, // D
+                explanation: `Ubah ke pecahan biasa terlebih dahulu:<br>${mf(4, 1, 2)} = ${f(9, 2)} = ${f(18, 4)}<br>${mf(2, 3, 4)} = ${f(11, 4)}<br>Kurangkan: ${f(18, 4)} - ${f(11, 4)} = ${f(7, 4)} = ${mf(1, 3, 4)}.`
+            },
+            {
+                id: 25,
+                topic: "Pecahan Campuran",
+                cat: "top3",
+                question: `Hitunglah penjumlahan berikut: ${mf(3, 1, 4)} + ${mf(2, 1, 6)} = ...`,
+                options: [mf(5, 2, 10), mf(5, 5, 12), mf(5, 1, 12), mf(6, 1, 6)],
+                correct: 1, // B
+                explanation: `• Bulat: 3 + 2 = 5<br>• Pecahan: ${f(1, 4)} + ${f(1, 6)} (KPK 4 & 6 = 12) = ${f(3, 12)} + ${f(2, 12)} = ${f(5, 12)}<br>Hasil akhir: ${mf(5, 5, 12)}.`
+            },
+            {
+                id: 26,
+                topic: "Pecahan Campuran",
+                cat: "top3",
+                question: `Bu Maya membeli ${mf(2, 1, 2)} kg beras merah dan ${mf(3, 1, 4)} kg beras putih. Berapa kg berat total beras yang dibeli Bu Maya?`,
+                options: [mf(5, 2, 6), mf(5, 1, 2), mf(5, 3, 4), mf(6, 1, 4)],
+                correct: 2, // C
+                explanation: `Total beras = ${mf(2, 1, 2)} + ${mf(3, 1, 4)}.<br>• Bulat: 2 + 3 = 5<br>• Pecahan: ${f(1, 2)} + ${f(1, 4)} = ${f(2, 4)} + ${f(1, 4)} = ${f(3, 4)}<br>Total = ${mf(5, 3, 4)} kg.`
+            },
+            {
+                id: 27,
+                topic: "Pecahan Campuran",
+                cat: "top3",
+                question: `Paman memiliki bambu sepanjang ${mf(4, 2, 5)} meter. Dipotong untuk membakar sate sepanjang ${mf(1, 1, 2)} meter. Berapa meter sisa bambu Paman?`,
+                options: [mf(2, 9, 10), mf(3, 1, 3), mf(2, 7, 10), mf(3, 1, 10)],
+                correct: 0, // A
+                explanation: `Ubah ke pecahan biasa:<br>${mf(4, 2, 5)} = ${f(22, 5)} = ${f(44, 10)}<br>${mf(1, 1, 2)} = ${f(3, 2)} = ${f(15, 10)}<br>Kurangkan: ${f(44, 10)} - ${f(15, 10)} = ${f(29, 10)} = ${mf(2, 9, 10)} meter.`
+            },
+            {
+                id: 28,
+                topic: "Pecahan Campuran",
+                cat: "top3",
+                question: `Hasil dari ${mf(2, 3, 8)} + ${mf(1, 1, 4)} adalah ...`,
+                options: [mf(3, 4, 12), mf(3, 1, 2), mf(3, 3, 4), mf(3, 5, 8)],
+                correct: 3, // D
+                explanation: `• Bulat: 2 + 1 = 3<br>• Pecahan: ${f(3, 8)} + ${f(1, 4)} = ${f(3, 8)} + ${f(2, 8)} = ${f(5, 8)}<br>Hasil akhir: ${mf(3, 5, 8)}.`
+            },
+            {
+                id: 29,
+                topic: "Pecahan Campuran",
+                cat: "top3",
+                question: `Berapakah hasil pengurangan dari ${mf(5, 1, 3)} - ${mf(2, 1, 2)}?`,
+                options: [mf(3, 1, 6), mf(2, 5, 6), mf(2, 1, 3), mf(3, 5, 6)],
+                correct: 1, // B
+                explanation: `Ubah ke pecahan biasa:<br>${mf(5, 1, 3)} = ${f(16, 3)} = ${f(32, 6)}<br>${mf(2, 1, 2)} = ${f(5, 2)} = ${f(15, 6)}<br>Kurangkan: ${f(32, 6)} - ${f(15, 6)} = ${f(17, 6)} = ${mf(2, 5, 6)}.`
+            },
+            {
+                id: 30,
+                topic: "Pecahan Campuran",
+                cat: "top3",
+                question: `Kakak memiliki persediaan gula ${mf(3, 1, 2)} kg. Digunakan untuk membuat sirup ${mf(1, 2, 3)} kg. Berapa kg sisa gula Kakak?`,
+                options: [mf(2, 1, 6), mf(1, 1, 3), mf(1, 5, 6), mf(2, 5, 6)],
+                correct: 2, // C
+                explanation: `Ubah ke pecahan biasa:<br>${mf(3, 1, 2)} = ${f(7, 2)} = ${f(21, 6)}<br>${mf(1, 2, 3)} = ${f(5, 3)} = ${f(10, 6)}<br>Kurangkan: ${f(21, 6)} - ${f(10, 6)} = ${f(11, 6)} = ${mf(1, 5, 6)} kg.`
+            }
+        ];
+
+        // State Aplikasi
+        let currentQuestionIndex = 0;
+        let userAnswers = new Array(quizData.length).fill(null);
+        let activeFilter = 'all';
+
+        const STORAGE_KEY = 'sd6_quiz_pecahan_user_answers_v1';
+
+        // Inisialisasi Aplikasi
+        function initApp() {
+            loadSavedAnswers();
+            renderQuestionGrid();
+            displayQuestion(currentQuestionIndex);
+            updateProgressAndScore();
+        }
+
+        // Simpan ke LocalStorage
+        function saveAnswersToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(userAnswers));
+            } catch (e) {
+                console.warn('LocalStorage error:', e);
+            }
+        }
+
+        // Muat dari LocalStorage
+        function loadSavedAnswers() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed) && parsed.length === quizData.length) {
+                        userAnswers = parsed;
+                    }
+                }
+            } catch (e) {
+                console.warn('LocalStorage error:', e);
+            }
+        }
+
+        // Reset Quiz dengan Konfirmasi
+        function resetQuizWithConfirm() {
+            if (confirm('Apakah kamu yakin ingin mengulangi quiz dari awal? Semua jawaban tersimpan akan dihapus.')) {
+                userAnswers = new Array(quizData.length).fill(null);
+                localStorage.removeItem(STORAGE_KEY);
+                currentQuestionIndex = 0;
+                renderQuestionGrid();
+                displayQuestion(currentQuestionIndex);
+                updateProgressAndScore();
+            }
+        }
+
+        // Filter Kategori Soal
+        function setFilter(cat) {
+            activeFilter = cat;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-slate-100', 'text-slate-600');
+            });
+            const activeBtn = document.getElementById('filter-' + cat);
+            activeBtn.classList.remove('bg-slate-100', 'text-slate-600');
+            activeBtn.classList.add('bg-blue-600', 'text-white');
+
+            renderQuestionGrid();
+        }
+
+        // Render Tombol Navigasi Grid (1 - 30)
+        function renderQuestionGrid() {
+            const gridContainer = document.getElementById('question-grid');
+            gridContainer.innerHTML = '';
+
+            quizData.forEach((item, idx) => {
+                if (activeFilter !== 'all' && item.cat !== activeFilter) {
+                    return; // skip if filtered out
+                }
+
+                const userAns = userAnswers[idx];
+                const isCurrent = idx === currentQuestionIndex;
+
+                let btnBg = "bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200";
+                if (userAns !== null) {
+                    if (userAns === item.correct) {
+                        btnBg = "bg-emerald-500 text-white border-emerald-600 font-bold";
+                    } else {
+                        btnBg = "bg-red-500 text-white border-red-600 font-bold";
+                    }
+                }
+
+                const borderRing = isCurrent ? "ring-4 ring-blue-400 ring-offset-1 font-extrabold" : "";
+
+                const btn = document.createElement('button');
+                btn.className = `w-10 h-10 rounded-2xl text-xs flex items-center justify-center border transition-all ${btnBg} ${borderRing}`;
+                btn.innerText = idx + 1;
+                btn.onclick = () => jumpToQuestion(idx);
+
+                gridContainer.appendChild(btn);
+            });
+        }
+
+        // Tampilkan Soal Berdasarkan Index
+        function displayQuestion(index) {
+            currentQuestionIndex = index;
+            const q = quizData[index];
+            const userAns = userAnswers[index];
+
+            // Badges
+            document.getElementById('q-number-badge').innerText = `Soal #${q.id}`;
+            document.getElementById('q-topic-badge').innerText = q.topic;
+
+            const statusBadge = document.getElementById('q-status-badge');
+            if (userAns === null) {
+                statusBadge.className = "text-xs font-bold px-3 py-1 rounded-xl bg-slate-100 text-slate-500";
+                statusBadge.innerText = "Belum Dijawab";
+            } else if (userAns === q.correct) {
+                statusBadge.className = "text-xs font-bold px-3 py-1 rounded-xl bg-emerald-100 text-emerald-700";
+                statusBadge.innerText = "✓ Jawaban Benar";
+            } else {
+                statusBadge.className = "text-xs font-bold px-3 py-1 rounded-xl bg-red-100 text-red-700";
+                statusBadge.innerText = "✕ Jawaban Salah";
+            }
+
+            // Question Text
+            document.getElementById('question-text').innerHTML = `${q.id}. ${q.question}`;
+
+            // Render Options (A, B, C, D)
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            const optionLabels = ['A', 'B', 'C', 'D'];
+
+            q.options.forEach((optHtml, optIdx) => {
+                const btn = document.createElement('button');
+                btn.disabled = userAns !== null; // Lock options after answered
+
+                let btnStyle = "bg-white border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-blue-50/50";
+                
+                if (userAns !== null) {
+                    if (optIdx === q.correct) {
+                        btnStyle = "bg-emerald-100 border-emerald-500 text-emerald-900 font-bold ring-2 ring-emerald-400";
+                    } else if (optIdx === userAns) {
+                        btnStyle = "bg-red-100 border-red-500 text-red-900 font-bold";
+                    } else {
+                        btnStyle = "bg-slate-50 border-slate-200 text-slate-400 opacity-60";
+                    }
+                }
+
+                btn.className = `w-full text-left p-4 rounded-2xl border-2 text-sm md:text-base font-semibold transition-all flex items-center space-x-3 ${btnStyle}`;
+                btn.innerHTML = `
+                    <span class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs shrink-0">${optionLabels[optIdx]}</span>
+                    <span class="flex-grow flex items-center gap-1 flex-wrap">${optHtml}</span>
+                    ${userAns !== null && optIdx === q.correct ? '<i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>' : ''}
+                    ${userAns !== null && optIdx === userAns && optIdx !== q.correct ? '<i class="fa-solid fa-circle-xmark text-red-500 text-lg"></i>' : ''}
+                `;
+
+                btn.onclick = () => selectOption(index, optIdx);
+                optionsContainer.appendChild(btn);
+            });
+
+            // Feedback & Explanation Box
+            const feedbackBox = document.getElementById('feedback-box');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackExplanation = document.getElementById('feedback-explanation');
+
+            if (userAns !== null) {
+                feedbackBox.classList.remove('hidden');
+                if (userAns === q.correct) {
+                    feedbackBox.className = "rounded-2xl p-4 md:p-5 border transition-all space-y-2 bg-emerald-50 border-emerald-200";
+                    feedbackTitle.className = "font-bold text-sm md:text-base flex items-center gap-2 text-emerald-800";
+                    feedbackTitle.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> Jawaban Kamu Benar! 🎉`;
+                } else {
+                    feedbackBox.className = "rounded-2xl p-4 md:p-5 border transition-all space-y-2 bg-red-50 border-red-200";
+                    feedbackTitle.className = "font-bold text-sm md:text-base flex items-center gap-2 text-red-800";
+                    feedbackTitle.innerHTML = `<i class="fa-solid fa-circle-xmark text-red-600"></i> Jawaban Belum Tepat!`;
+                }
+                feedbackExplanation.innerHTML = `<strong>Langkah Pembahasan:</strong><br>${q.explanation}`;
+            } else {
+                feedbackBox.classList.add('hidden');
+            }
+
+            // Prev / Next button states
+            document.getElementById('btn-prev').disabled = index === 0;
+            document.getElementById('btn-prev').style.opacity = index === 0 ? "0.5" : "1";
+
+            document.getElementById('btn-next').disabled = index === quizData.length - 1;
+            document.getElementById('btn-next').style.opacity = index === quizData.length - 1 ? "0.5" : "1";
+
+            renderQuestionGrid();
+        }
+
+        // Pilih Jawaban
+        function selectOption(qIdx, optIdx) {
+            if (userAnswers[qIdx] !== null) return; // double check lock
+            
+            userAnswers[qIdx] = optIdx;
+            saveAnswersToStorage();
+            displayQuestion(qIdx);
+            updateProgressAndScore();
+        }
+
+        // Navigasi Next / Prev / Jump
+        function nextQuestion() {
+            if (currentQuestionIndex < quizData.length - 1) {
+                displayQuestion(currentQuestionIndex + 1);
+                window.scrollTo({ top: 100, behavior: 'smooth' });
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                displayQuestion(currentQuestionIndex - 1);
+                window.scrollTo({ top: 100, behavior: 'smooth' });
+            }
+        }
+
+        function jumpToQuestion(idx) {
+            displayQuestion(idx);
+            window.scrollTo({ top: 100, behavior: 'smooth' });
+        }
+
+        // Update Progress & Dashboard Skor
+        function updateProgressAndScore() {
+            let answeredCount = 0;
+            let correctCount = 0;
+            let wrongCount = 0;
+
+            userAnswers.forEach((ans, idx) => {
+                if (ans !== null) {
+                    answeredCount++;
+                    if (ans === quizData[idx].correct) {
+                        correctCount++;
+                    } else {
+                        wrongCount++;
+                    }
+                }
+            });
+
+            const percent = Math.round((answeredCount / quizData.length) * 100);
+            const scoreVal = Math.round((correctCount / quizData.length) * 100);
+
+            document.getElementById('answered-count-text').innerText = answeredCount;
+            document.getElementById('progress-percent-text').innerText = `${percent}%`;
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+
+            document.getElementById('live-score').innerText = scoreVal;
+            document.getElementById('live-correct').innerText = correctCount;
+            document.getElementById('live-wrong').innerText = wrongCount;
+
+            // Final Dashboard
+            document.getElementById('final-score-val').innerText = scoreVal;
+            document.getElementById('final-correct-val').innerText = correctCount;
+            document.getElementById('final-wrong-val').innerText = wrongCount;
+
+            const motivationBox = document.getElementById('motivation-box');
+            if (answeredCount === quizData.length) {
+                if (scoreVal >= 90) {
+                    motivationBox.innerHTML = "🏆 LUAR BIASA! Kamu menguasai seluruh materi Penjumlahan & Pengurangan Pecahan Kelas 6 dengan sempurna!";
+                } else if (scoreVal >= 70) {
+                    motivationBox.innerHTML = "🌟 BAGUS BANGET! Kamu sudah paham dengan baik. Tinjau kembali soal yang salah untuk hasil 100%!";
+                } else {
+                    motivationBox.innerHTML = "💪 TETAP SEMANGAT! Kamu bisa membaca ulang materi modul dan mencoba pembahasan di setiap nomor soal!";
+                }
+            } else {
+                motivationBox.innerHTML = `Selesaikan seluruh 30 soal untuk menguji kemampuanmu secara menyeluruh! (${30 - answeredCount} soal tersisa)`;
+            }
+        }
+
+        // Start App
+        window.onload = initApp;
+    </script>
+</body>
+</html>
